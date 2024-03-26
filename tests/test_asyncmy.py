@@ -3,6 +3,7 @@ import pytest
 import run_tests as t
 import utils as u
 from datetime import date
+from asyncmy.cursors import DictCursor
 
 try:
     import asyncmy as db
@@ -22,71 +23,66 @@ DRIVER = "asyncmy"
 def queries():
     return t.queries(DRIVER)
 
-@pytest.fixture
-@pytest.mark.asyncio
-async def conn(my_dsn):
-    conn = await asyncmy.connect(my_dsn)
-    return conn
 
 @pytest.fixture
-@pytest.mark.asyncio
-async def cur(conn):
-    async with conn.cursor(cursor=db.cursors.DictCursor) as cur:
+async def cur(my_dsn):
+    conn = await db.connect(my_dsn)
+    async with conn.cursor(cursor=DictCursor) as cur:
         yield cur
-
+    await conn.close()
 
 @pytest.mark.asyncio
 async def test_record_query(cur, queries):
-    await t.run_record_query(cur, queries)
+    await t.run_async_record_query(cur, queries)
 
 
 @pytest.mark.asyncio
 async def test_parameterized_query(cur, queries):
-    await t.run_parameterized_query(cur, queries)
+    await t.run_async_parameterized_query(cur, queries)
 
 @pytest.mark.asyncio
 async def test_parameterized_record_query(cur, queries):  # pragma: no cover
-    await t.run_parameterized_record_query(cur, queries, DRIVER, date)
+    await t.run_async_parameterized_record_query(cur, queries, DRIVER, date)
 
 
 @pytest.mark.asyncio
 async def test_record_class_query(cur, queries):
-    await t.run_record_class_query(cur, queries, date)
+    await t.run_async_record_class_query(cur, queries, date)
 
 
 @pytest.mark.asyncio
 async def test_select_cursor_context_manager(cur, queries):
-    await t.run_select_cursor_context_manager(cur, queries, date)
+    await t.run_async_select_cursor_context_manager(cur, queries, date)
 
 
 @pytest.mark.asyncio
 async def test_select_one(cur, queries):
-    await t.run_select_one(cur, queries)
+    await t.run_async_select_one(cur, queries)
 
 
 @pytest.mark.asyncio
 async def test_select_value(cur, queries):
-    await t.run_select_value(cur, queries, DRIVER)
+    await t.run_async_select_value(cur, queries, DRIVER)
 
 
 @pytest.mark.skip("MySQL does not support RETURNING")
 @pytest.mark.asyncio
 async def test_insert_returning(cur, queries):  # pragma: no cover
-    await t.run_insert_returning(cur, queries, DRIVER, date)
+    await t.run_async_insert_returning(cur, queries, DRIVER, date)
 
 
 @pytest.mark.asyncio
 async def test_delete(cur, queries):
-    await t.run_delete(cur, queries)
+    await t.run_async_delete(cur, queries)
 
 
 @pytest.mark.asyncio
 async def test_insert_many(cur, queries):
-    await t.run_insert_many(cur, queries, date)
+    await t.run_async_insert_many(cur, queries, date)
 
 
 @pytest.mark.asyncio
 async def test_date_time(cur, queries):
-    await t.run_date_time(cur, queries, DRIVER)
+    await t.run_async_date_time(cur, queries, DRIVER)
 
 

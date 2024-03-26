@@ -369,7 +369,7 @@ async def run_async_parameterized_record_query(conn, queries, db, todate):
     fun = (
         queries.blogs.pg_get_blogs_published_after
         if _DB[db] == "postgres"
-        else queries.blogs.mysql_get_blogs_published_after if _DB[db] == "mysql"
+        else queries.blogs.my_get_blogs_published_after if _DB[db] == "mysql"
         else queries.blogs.sqlite_get_blogs_published_after if _DB[db] == "sqlite3" else None
     )
     records = await fun(conn, published=todate(2018, 1, 1))

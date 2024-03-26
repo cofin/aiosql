@@ -46,7 +46,7 @@ class AsyncMYAdapter:
 
     @asynccontextmanager
     async def select_cursor(self, conn, _query_name, sql, parameters):
-        async with conn.cursor(cursor=asyncmy.cursors.DictCursor) as cur:
+        async with await conn.cursor(cursor=asyncmy.cursors.DictCursor) as cur:
             yield cur
 
     async def insert_returning(self, conn, _query_name, sql, parameters):

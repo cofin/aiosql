@@ -62,7 +62,7 @@ def test_parameterized_query(conn_db, my_dsn, queries):
 
 @pytest.mark.skip("pymysql issue when mogrifying because of date stuff %Y")
 def test_parameterized_record_query(conn_db, my_dsn, queries):  # pragma: no cover
-    with db.connect(**pymysql_db_dsn, cursorclass=db.cursors.DictCursor) as conn:
+    with db.connect(**my_dsn, cursorclass=db.cursors.DictCursor) as conn:
         t.run_parameterized_record_query(conn, queries, DRIVER, date)
 
 
