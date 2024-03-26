@@ -9,4 +9,4 @@ WORKDIR /code
 # mysql specific packages
 RUN apt install -y --no-install-recommends libmysqlclient-dev
 RUN apt clean
-RUN /venv/bin/pip install cryptography mysqlclient mysql-connector-python pymysql pytest-mysql
+RUN /venv/bin/pip install cryptography mysqlclient mysql-connector-python pymysql pytest-mysql asyncmy

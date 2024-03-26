@@ -29,6 +29,7 @@ _DB = {
     "asyncpg": "postgres",
     "pygresql": "postgres",
     "pg8000": "postgres",
+    "asyncmy": "mysql",
     "pymysql": "mysql",
     "mysql-connector": "mysql",
     "mysqldb": "mysql",
@@ -368,6 +369,7 @@ async def run_async_parameterized_record_query(conn, queries, db, todate):
     fun = (
         queries.blogs.pg_get_blogs_published_after
         if _DB[db] == "postgres"
+        else queries.blogs.mysql_get_blogs_published_after if _DB[db] == "mysql"
         else queries.blogs.sqlite_get_blogs_published_after if _DB[db] == "sqlite3" else None
     )
     records = await fun(conn, published=todate(2018, 1, 1))
@@ -426,7 +428,7 @@ async def run_async_select_value(conn, queries):
 async def run_async_insert_returning(conn, queries, db, todate):
     is_pg = _DB[db] == "postgres"
 
-    fun = queries.blogs.pg_publish_blog if is_pg else queries.blogs.publish_blog
+    fun = queries.blogs.pg_publish_blog if is_pg else   queries.blogs.publish_blog
 
     blogid = await fun(
         conn,

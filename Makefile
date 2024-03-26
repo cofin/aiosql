@@ -75,7 +75,7 @@ venv:
 
 venv.dev: venv
 	source venv/bin/activate
-	$(PIP) install .[dev,dev-postgres,dev-sqlite,dev-duckdb]
+	$(PIP) install .[dev,dev-postgres,dev-sqlite,dev-duckdb,dev-mysql]
 
 venv.dist: venv
 	source venv/bin/activate
@@ -231,10 +231,11 @@ check.pytest.mysql: $(INSTALL)
 	# FIXME this does not seem to work…
 	$(WAIT) $(MY_HOST) $(MY_PORT) 10 || exit 0
 	set -e
-	# run with all 3 drivers
+	# run with all 4 drivers
 	$(PYTEST) $(PYTOPT) --mysql-driver=MySQLdb tests/test_mysqldb.py
 	$(PYTEST) $(PYTOPT) --mysql-driver=pymysql tests/test_pymysql.py
 	$(PYTEST) $(PYTOPT) --mysql-driver=mysql.connector tests/test_myco.py
+	$(PYTEST) $(PYTOPT) --mysql-driver=asyncmy tests/test_asyncmy.py
 
 .PHONY: check.pytest.skip.local
 check.pytest.skip.local:

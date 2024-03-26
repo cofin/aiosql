@@ -32,7 +32,8 @@ based drivers for
 `MySQL <https://www.mysql.com/>`__
 (`PyMySQL <https://github.com/PyMySQL/PyMySQL/>`__,
 `mysqlclient <https://pypi.org/project/mysqlclient/>`__,
-`mysql-connector <https://dev.mysql.com/doc/connector-python/en/>`__),
+`mysql-connector <https://dev.mysql.com/doc/connector-python/en/>`__,
+`asyncmy <https://github.com/long2ice/asyncmy>`__),
 `MariaDB <https://mariadb.org/>`__
 (`mariadb <https://pypi.org/project/mariadb/>`__) and
 `DuckDB <https://www.duckdb.org/>`__

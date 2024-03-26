@@ -14,7 +14,7 @@ def pytest_addoption(parser):
     parser.addoption(
         "--mysql-driver",
         default="MySQLdb",
-        choices=["MySQLdb", "mysql.connector", "pymysql", "mariadb"],
+        choices=["MySQLdb", "mysql.connector", "pymysql", "mariadb", "asyncmy"],
         help="which driver to use for creating connections",
     )
 
