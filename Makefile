@@ -233,6 +233,7 @@ check.pytest.mysql: $(INSTALL)
 	$(PYTEST) $(PYTOPT) --mysql-driver=MySQLdb tests/test_mysqldb.py
 	$(PYTEST) $(PYTOPT) --mysql-driver=mysql.connector tests/test_myco.py
 	$(PYTEST) $(PYTOPT) --mysql-driver=pymysql tests/test_pymysql.py
+	$(PYTEST) $(PYTOPT) --mysql-driver=asyncmy tests/test_asyncmy.py
 
 .PHONY: check.pytest.skip.local
 check.pytest.skip.local:
@@ -298,6 +299,35 @@ check.pytest.mssql: $(INSTALL)
 	sleep 5
 	$(WAIT) $(MS_HOST) $(MS_PORT) 10 || exit 1
 	$(PYTEST) $(PYTOPT) tests/test_pymssql.py
+
+#
+# Oracle
+#
+
+ORACLE_HOST = localhost
+ORACLE_PORT = 1521
+ORACLE_SERVICE_NAME = FREEPDB1
+ORACLE_USER = app
+ORACLE_PASSWORD = Abc123..
+
+
+#
+# Spanner
+#
+SPANNER_PORT = 9010
+SPANNER_GRPC_PORT = 9020
+SPANNER_PROJECT_ID = emulator-test-project
+SPANNER_INSTANCE_NAME = test-instance
+SPANNER_DATABASE_NAME = test-database
+SPANNER_EMULATOR_HOST = localhost:9010
+SPANNER_EMULATOR_URL = http://localhost:9020/
+#
+# BigQuery
+#
+BIGQUERY_PORT = 9050
+BIGQUERY_GRPC_PORT = 9060
+BIGQUERY_PROJECT_ID = emulator-test-project
+BIGQUERY_DATASET = test-dataset
 
 #
 # SQLite3, DuckDB and Misc
@@ -426,6 +456,46 @@ docker.coverage:
 	sleep 5
 	touch $@
 
+.docker.run.oracle:
+	docker run -d --name aiosql-tests-oracle \
+	  -p $(ORACLE_PORT):1521 \
+	  -e APP_USER=$(ORACLE_USER) \
+	  -e APP_USER_PASSWORD=$(ORACLE_PASSWORD) \
+	  -e ORACLE_PASSWORD=$(ORACLE_PASSWORD) \
+		gvenzl/oracle-free:23-slim-faststart
+	sleep 5
+	touch $@
+
+.docker.run.spanner:
+	# start the database
+	SPANNER_EMULATOR_HOST=$(SPANNER_EMULATOR_HOST)
+	SPANNER_EMULATOR_URL=$(SPANNER_EMULATOR_URL)
+	docker run -d --name aiosql-tests-spanner \
+	  -p $(SPANNER_PORT):9010 \
+	  -p $(SPANNER_GRPC_PORT):9020 \
+	  gcr.io/cloud-spanner-emulator/emulator
+	sleep 10
+	# start the database
+	docker run --name aiosql-tests-spanner-init \
+	  -e PROJECT_ID=$(SPANNER_PROJECT_ID) \
+	  -e INSTANCE_NAME=$(SPANNER_INSTANCE_NAME) \
+	  -e DATABASE_NAME=$(SPANNER_DATABASE_NAME) \
+	  gcr.io/google.com/cloudsdktool/cloud-sdk:slim \
+	  bash -c 'gcloud config configurations create emulator && gcloud config set auth/disable_credentials true && gcloud config set project $(SPANNER_PROJECT_ID) && gcloud config set auth/disable_credentials true && gcloud spanner instances create $(SPANNER_INSTANCE_NAME) --config=emulator-config --description=Emulator --nodes=1'
+	sleep 5
+	touch $@
+
+.docker.run.bigquery:
+	docker run -d --name aiosql-tests-bigquery \
+	  -p $(BIGQUERY_PORT):1433 \
+	  -p $(BIGQUERY_GRPC_PORT):1433 \
+	  -e PROJECT_ID=$(BIGQUERY_PROJECT_ID) \
+	  -e DATASET_NAME=$(BIGQUERY_DATASET) \
+	  ghcr.io/goccy/bigquery-emulator:latest \
+	  --project=$(BIGQUERY_PROJECT_ID) --dataset=$(BIGQUERY_DATASET)
+	sleep 5
+	touch $@
+
 .PHONY: check.pytest.docker.postgres
 check.pytest.docker.postgres: .docker.run.postgres
 	$(MAKE) check.pytest.postgres.detached
@@ -450,17 +520,21 @@ check.pytest.docker:
 	$(MAKE) check.pytest.docker.mysql
 	$(MAKE) check.pytest.docker.mariadb
 	$(MAKE) check.pytest.docker.mssql
+	$(MAKE) check.pytest.docker.oracle
+	$(MAKE) check.pytest.docker.spanner
+	$(MAKE) check.pytest.docker.bigquery
 	$(MAKE) docker.clean
 
-DOCKER.server = aiosql-tests-postgres aiosql-tests-mysql aiosql-tests-mariadb aiosql-tests-mssql
+DOCKER.server = aiosql-tests-postgres aiosql-tests-mysql aiosql-tests-mariadb aiosql-tests-mssql aiosql-tests-spanner aiosql-tests-spanner-init aiosql-tests-bigquery aiosql-tests-oracle
 
 .PHONY: docker.stop
 docker.stop:
 	docker stop $(DOCKER.server) || exit 0
+	$(RM) .docker.run.*
 
 .PHONY: docker.rm
-docker.rm: docker.stop
-	docker container rm $(DOCKER.server)
+docker.rm:
+	docker container rm -f $(DOCKER.server)
 	$(RM) .docker.run.*
 
 #

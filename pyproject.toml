@@ -43,13 +43,24 @@ dev-mysql = [
     "pytest-mysql",
     "mysqlclient",
     "mysql-connector-python",
-    "pymysql"
+    "pymysql",
+    "asyncmy; python_version < '3.13' and implementation_name != 'pypy'",
 ]
 dev-mariadb = [
     "mariadb"
 ]
 dev-mssql = [
+    "pymssql",
+    "aioodbc"
+]
+dev-spanner = [
     "pymssql"
+]
+dev-bigquery = [
+    "pymssql"
+]
+dev-oracle = [
+    "oracledb"
 ]
 dist = [
     "build", "wheel", "twine",
